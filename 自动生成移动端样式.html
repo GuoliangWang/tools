@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>自动生成移动端样式</title>
+</head>
+<body>
+	<div style="display: flex;">
+		<textarea id="pc-style" placeholder="请输入pc端样式" style="width: 50%; height: 800px;"></textarea>
+		<textarea id="mobile-style" placeholder="此处为移动端样式" style="width: 50%; height: 800px;"></textarea>
+	</div>
+	<a onclick="handleClick()">生产移动端样式</a>
+	<script type="text/javascript">
+		function handleClick() {
+			var pcStyle = document.getElementById('pc-style').value;
+			var pcRows = pcStyle.split('\n');
+			var mobileRows = [];
+			for (var i = 0; i < pcRows.length; i++) {
+				var row = pcRows[i];
+				if(row.indexOf('{') >= 0 || row.indexOf('}') >= 0) {
+					mobileRows.push('  ' + row);
+				} else if(row.indexOf('px') >= 0) {
+					var pxStrs = row.match(/[0-9]*(px)/g);
+					for (var j = 0; j < pxStrs.length; j++) {
+						var regx = new RegExp(pxStrs[j], 'g');
+						var srcPix = parseInt(pxStrs[j]);
+						var halfPix = parseInt(srcPix / 2);	
+						var minValue;
+						if(srcPix === 0) {
+							minValue = 0
+						} else if(row.indexOf('font-size') >=0) {
+							minValue = 12;	
+						} else if(row.indexOf('line-height') >=0) {
+							minValue = 16;	
+						} else {
+							minValue = 1;
+						}
+						if(halfPix < minValue) {
+							halfPix = minValue
+						}
+						var pix = halfPix + 'px';
+						row = row.replace(regx, pix);
+					}
+					mobileRows.push('  ' + row);
+				}
+			}
+			mobileRows.unshift('@media all and (orientation : portrait) {');
+			mobileRows.push('}');
+			var mobleStyle = mobileRows.join('\n');
+			document.getElementById('mobile-style').value = mobleStyle;
+		}
+	</script>
+</body>
+</html>
